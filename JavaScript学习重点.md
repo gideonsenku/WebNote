@@ -163,4 +163,18 @@ console.log(funcA())
 console.log(new A().getA())
 ```
 
-### 
+### 样式
+
+```js
+/*
+* getStyle method:
+* 1.use > para.style.property
+* const para = document.getElementById('element');
+* const style = para.style.property
+* 2.use > getComputedStyle(element, [pseudoElt]);
+* let theCSSprop = window.getComputedStyle(elem,null).getPropertyValue("height");
+* setStyle method:
+* element.style.property = value
+*/
+```
+
