@@ -1,4 +1,19 @@
-箭头函数
+#### 箭头函数
+
+- 箭头函数没有 “this”
+
+- 不能对箭头函数进行 `new` 操作
+
+  > 不具有 `this` 自然也就意味着另一个限制：箭头函数不能用作构造器（constructor）。不能用 `new` 调用它们
+
+- 箭头函数也没有 `arguments` 变量
+
+**箭头函数 VS bind**
+
+箭头函数 `=>` 和使用 `.bind(this)` 调用的常规函数之间有细微的差别：
+
+- `.bind(this)` 创建了一个该函数的“绑定版本”。
+- 箭头函数 `=>` 没有创建任何绑定。箭头函数只是没有 `this`。`this` 的查找与常规变量的搜索方式完全相同：在外部词法环境中查找。
 
 ```javascript
 //ajax
@@ -34,4 +49,24 @@ fetch('/api.json')
   console.log('parsing failed',ex)
 })
 ```
+
+#### 解构赋值
+
+```javascript
+var { name, age, id } = { id: "007", name: "Conan", age: 28 };
+console.log(name);  //Conan
+console.log(age);   //28
+console.log(id);    //007
+// 指定默认值
+// 默认值生效的条件是，对象的属性值严格等于undefined。
+// 等于null则不生效。
+
+var { x = 3 } = { x: undefined };
+console.log(x); //3
+
+var { y = 3 } = { y: null };
+console.log(y); //null
+```
+
+#### 扩展运算符
 
