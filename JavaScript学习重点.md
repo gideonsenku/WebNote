@@ -178,3 +178,41 @@ console.log(new A().getA())
 */
 ```
 
+document.querySelector
+
+如果要匹配的ID或选择器不符合 CSS 语法（比如不恰当地使用了冒号或者空格），你必须用反斜杠将这些字符转义。由于 JavaScript 中，反斜杠是转义字符，所以当你输入一个文本串时，你必须将它转义两次（一次是为 JavaScript 字符串转义，另一次是为 `querySelector` 转义）：
+
+```html
+<div id="foo\bar"></div>
+<div id="foo:bar"></div>
+
+<script>
+  console.log('#foo\bar')               // "#fooar"
+  document.querySelector('#foo\bar')    // 不匹配任何元素
+
+  console.log('#foo\\bar')              // "#foo\bar"
+  console.log('#foo\\\\bar')            // "#foo\\bar"
+  document.querySelector('#foo\\\\bar') // 匹配第一个div
+
+  document.querySelector('#foo:bar')    // 不匹配任何元素
+  document.querySelector('#foo\\:bar')  // 匹配第二个div
+</script>
+```
+
+**查找第一个匹配 class属性的html元素**
+
+这个例子中，会返回当前文档中第一个类名为 "`myclass`" 的元素：
+
+```js
+var el = document.querySelector(".myclass");
+```
+
+**一个更复杂的选择器**
+
+*选择器也可以非常强大，如以下示例所示*.
+
+这里, 一个class属性为"user-panel main"的div元素[``](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/div)(`<div class="user-panel main">`)内包含一个name属性为"login"的input元素[``](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/input) (`<input name="login"/>`) ，如何选择，如下所示:
+
+```js
+var el = document.querySelector("div.user-panel.main input[name='login']");
+```
