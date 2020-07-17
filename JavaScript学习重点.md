@@ -57,7 +57,7 @@ this.sex="male";
 var stu = new Student()
 ```
 
-动态作用域，作用域链是基于栈的，而不是代码中的作用域嵌套
+词法作用域，作用域链是基于调用栈的，而不是代码中的作用域嵌套
 
 ```javascript
 function foo(){
@@ -105,7 +105,7 @@ var newString = 'abc12345#$*%'.replace(/([^\d]*)(\d*)([^\w]*)/, replacer);
 
 - import可以将一个模块中的一个或多个API导入代当前代作用域中，并分别绑定到一个变量上
 - module会将整个模块的API导入并绑定到一个变量上
-
+- node环境下使用module.exports导出模块,require('/path/to/moduleName')导入
 ```javascript
 //bar.js
 function hello(who){
@@ -126,6 +126,15 @@ module foo from 'foo';
 module bar from 'bar';
 console.log(bar.hello('Something'));
 console.log(foo.awessome());
+
+// sum.js
+module.exports = function(a, b) {
+    return a + b
+}
+
+// index.js
+var sum = require('./sum')
+console.log(sum(1, 2))
 ```
 
 ### this
