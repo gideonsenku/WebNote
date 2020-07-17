@@ -53,7 +53,8 @@ fetch('/api.json')
 #### 解构赋值
 
 ```javascript
-var { name, age, id } = { id: "007", name: "Conan", age: 28 };
+const obj = { id: "007", name: "Conan", age: 28 };
+const { name, age, id } = obj;
 console.log(name);  //Conan
 console.log(age);   //28
 console.log(id);    //007
@@ -61,11 +62,16 @@ console.log(id);    //007
 // 默认值生效的条件是，对象的属性值严格等于undefined。
 // 等于null则不生效。
 
-var { x = 3 } = { x: undefined };
+const { x = 3 } = { x: undefined };
 console.log(x); //3
 
-var { y = 3 } = { y: null };
+const { y = 3 } = { y: null };
 console.log(y); //null
+
+// 配合扩展运算符对Object进行结构
+const {id, ..._obj} = obj;
+console.log(id);   // 007
+console.log(_obj); // { name: "Conan", age: 28 }
 ```
 
 #### 扩展运算符
