@@ -104,8 +104,24 @@ var newString = 'abc12345#$*%'.replace(/([^\d]*)(\d*)([^\w]*)/, replacer);
 ### 模块机制
 
 - import可以将一个模块中的一个或多个API导入代当前代作用域中，并分别绑定到一个变量上
+
 - module会将整个模块的API导入并绑定到一个变量上
+
 - node环境下使用module.exports导出模块,require('/path/to/moduleName')导入
+
+- 一个模块就是一个文件。浏览器需要使用 `<script type="module">`
+  以使`import/export`可以工作。
+  模块（译注：相较于常规脚本）有几点差别：
+- 默认是延迟解析的（deferred）。
+  - Async 可用于内联脚本。
+  - 要从另一个源（域/协议/端口）加载外部脚本，需要 CORS header。
+  - 重复的外部脚本会被忽略
+  
+- 模块具有自己的本地顶级作用域，并可以通过 `import/export` 交换功能。
+
+- 模块始终使用 `use strict`。
+
+- 模块代码只执行一次。导出仅创建一次，然后会在导入之间共享。
 ```javascript
 //bar.js
 function hello(who){
@@ -136,6 +152,10 @@ module.exports = function(a, b) {
 var sum = require('./sum')
 console.log(sum(1, 2))
 ```
+
+
+
+
 
 ### this
 
