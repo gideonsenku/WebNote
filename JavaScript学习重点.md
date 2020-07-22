@@ -245,3 +245,82 @@ var el = document.querySelector(".myclass");
 ```js
 var el = document.querySelector("div.user-panel.main input[name='login']");
 ```
+
+### JSONP
+
+##### 什么是JSONP
+
+> `<script>`元素可以作为一种Ajax传输机制：只须设置`<script>`元素的src属性（假如它还没插入到document中，需要插入进去），然后浏览器就会发送HTTP请求下载src属性所指向的URL。
+>
+> 使用`<script>`元素进行Ajax传输的一个主要原因是：
+>
+> - 它不受同源策略的影响，因此可以使用它们从其他的服务器请求数据，
+>
+> - 第二个原因是包含JSON编码数据的响应体会解码。 
+
+> 这种使用`<script>`元素作为Ajax传输的技术称为JSONP。
+
+> 假设你已经写了一个服务，它处理GET请求并返回JSON编码的数据，同源文档可以在代码中使用XMLHttpRequest和JSON.parse()。假如在服务器上启用了CORS，在新的浏览器下，跨域的文档也可以使用XMLHttpRequest享受到该服务。
+>
+> 在不支持CORS的旧浏览器下，跨域文档只通过`<script>`元素访问这个服务。使用JSONP，JSON响应数据是合法的JavaScript代码，当它到达浏览器将执行它。
+
+##### 二、原理分析
+
+同源策略下，某个服务器是无法获取到服务器以外的数据，但是html里面的**`img,iframe和script等标签是个例外`**，这些标签可以通过src属性**请求到其他服务器上的数据**。而JSONP 就是通过script节点src调用跨域的请求。
+ 当我们向服务器提交一个JSONP的请求时，我们给服务传了一个特殊的参数，告诉服务端要对结果特殊处理一下。这样服务端返回的数据就会进行一点包装，客户端就可以处理。
+ 例如。服务端和客户端约定要传一个名为callback的参数来使用JSONP功能，比如请求的参数如下：
+
+> [http://www.example.net/sample.aspx?callback=mycallback](https://link.jianshu.com?t=http://www.example.net/sample.aspx?callback=mycallback)
+
+如果没有后面的callback参数，即不使用JSONP的模式，该服务的返回结果可能是一个单纯的json字符串,比如：`{foo:'bar'}`。但是如果使用JSONP模式，那么返回的是一个函数调用:`mycallback({foo:'bar'})`，这样我们在代码之中，定义一个名为mycallback的回调函数，就可以解决跨域问题了。
+
+```html
+<!DOCTYPE html> 
+<html> 
+<head> 
+<meta charset="utf-8"> 
+<script src="http://code.jquery.com/jquery-1.8.0.min.js"></script> 
+<title></title> 
+</head> 
+<body> 
+<div class="main">
+    <form>
+        <input type="text" id="keyWords" />
+        <input type="button" id="search" value="百度一下" />
+    </form>
+    <ul id="result"></ul>
+</div>
+<script type="text/javascript"> 
+function relatedWords(data){ 
+    var _html=[]; 
+
+    for(var i=0;i<data.s.length;i++){
+        _html.push('<li>' + data.s[i] + '</li>');
+    }
+
+    $('#result').html(_html.join(''));
+}; 
+
+$(function(){ 
+    $('#keyWords').keyup(function() { 
+        var val = $(this).val(); 
+        if (val.trim() == '') {
+            return ;
+        }
+
+        $.ajax({ 
+            url:'http://suggestion.baidu.com/su?wd='+val+'&json=1&p=3&req=2&cb=relatedWords', 
+            dataType:'jsonp' 
+        });
+    }); 
+}); 
+</script> 
+</body> 
+</html>
+ <!-- 
+作者：_李雷
+链接：https://www.jianshu.com/p/c45061494bba
+来源：简书
+--> 
+```
+
