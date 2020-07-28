@@ -75,6 +75,44 @@ bar()
 
 
 
+### Class
+
+类的语法格式
+
+```javascript
+class MyClass {
+  prop = value; // 属性
+
+  constructor(...) { // 构造器
+    // ...
+  }
+
+  method(...) {} // method
+
+  get something(...) {} // getter 方法
+  set something(...) {} // setter 方法
+
+  [Symbol.iterator]() {} // 有计算名称（computed name）的方法（此处为 symbol）
+  // ...
+}
+
+
+// Computed names […]
+class User {
+
+  ['say' + 'Hi']() {
+    alert("Hello");
+  }
+
+}
+
+new User().sayHi();
+```
+
+
+
+
+
 ### 其他
 
 1、replace函数的第二个个参数可以是回调函数
