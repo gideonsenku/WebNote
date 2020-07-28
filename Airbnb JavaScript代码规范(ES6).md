@@ -2,11 +2,17 @@
 
 - 箭头函数没有 “this”
 
-- 不能对箭头函数进行 `new` 操作
+- 不能对箭头函数进行 `new` 操作，没有`new.target`
 
   > 不具有 `this` 自然也就意味着另一个限制：箭头函数不能用作构造器（constructor）。不能用 `new` 调用它们
 
 - 箭头函数也没有 `arguments` 变量
+
+- 箭头函数也没有`super`
+
+- 没有原型对象
+
+- 形式参数名称不能重复
 
 **箭头函数 VS bind**
 
@@ -68,7 +74,7 @@ console.log(x); //3
 const { y = 3 } = { y: null };
 console.log(y); //null
 
-// 配合扩展运算符对Object进行结构
+// 配合扩展运算符对Object进行解构
 const {id, ..._obj} = obj;
 console.log(id);   // 007
 console.log(_obj); // { name: "Conan", age: 28 }
