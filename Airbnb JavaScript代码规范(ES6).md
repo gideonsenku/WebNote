@@ -1,3 +1,45 @@
+#### 变量和常量
+
+- var
+
+- let
+
+- const
+
+  > 不允许修改内存地址
+
+  ```js
+  const name = 'Senku'
+  const age = 18
+  
+  name = 'Gideon' //Error
+  // 对象字面量
+  const obj = {
+      name: 'Senku',
+      age: 18,
+      run: function() {
+          console.log('running')
+      }
+  }
+  // 对象增强写法
+  const obj1 = {
+      name,
+      age,
+      run() {
+          console.log('running')
+      },
+  }
+  obj = {
+      name: 'Gideon'
+  } //Error
+  
+  obj.name = 'Gideon' // 仅仅修改对象的属性值，不影响内存地址
+  ```
+
+  
+
+
+
 #### 箭头函数
 
 - 箭头函数没有 “this”
