@@ -315,3 +315,338 @@ let app = new Vue({
 </script>
 ```
 
+
+
+### 数据双向绑定
+
+- v-model
+
+  ```html
+  <input v-model="message" type="text" name="" id="">
+  <!-- v-model的原理：通过一个v-bind和一个v-on实现 -->
+  <input type="text" :value="message" @input="message = $event.target.value">
+  ```
+
+- 和radio标签结合
+
+  ```html
+  <input v-model="sex" type="radio" name="sex" id="male" value="男">男
+  <input v-modeL="sex" type="radio" name="sex" id="female" value="女">女
+  <!-- v-model可以替代name属性 name作为key，实现radio的互斥 -->
+  ```
+
+- 与checkbox结合
+
+  ```html
+  <!-- 单选框：对应布尔类型 -->
+  <label for="agree">
+      <input type="checkbox" id="agree" v-model="isAgree">同意协议
+  </label>
+  <button :disabled="!isAgree">下一步</button>
+  <h2>{{ message }}</h2>
+  
+  <!-- 多选框：对应数组 -->
+  
+  <input type="checkbox" id="" v-model="movies" value="星际穿越">星际穿越
+  <input type="checkbox" id="" v-model="movies" value="星际联盟">星际联盟
+  <input type="checkbox" id="" v-model="movies" value="盗梦空间">盗梦空间
+  <input type="checkbox" id="" v-model="movies" value="死亡笔记">死亡笔记
+  <h2>{{ movies }}</h2>
+  
+  <!-- 值绑定:值不是写死的，而是动态的获取和绑定 -->
+  <label v-for="movie in originMovies" :for="movie">
+      <input type="checkbox" v-model="movies" :id="movie" :value="movie">{{movie}}
+  </label>
+  ```
+
+- 与select结合
+
+  ```html
+  <!-- 选择多个:绑定一个数组，添加到数组 -->
+  <select name=""  v-model="fruits" multiple>
+      <option value="apple">apple</option>
+      <option value="banana">banana</option>
+      <option value="tomato">tomato</option>
+  </select>
+  ```
+
+- 修饰符
+
+  ```html
+  <div id="app">
+      <!-- 1.lazy修饰符
+          lazy修饰符可以让数据在失去焦点或者回车时才会更新
+      -->
+      <!-- <input type="text" v-model.lazy="message">
+      <h2>{{message}}</h2> -->
+  
+      <!-- 2.number修饰符
+          v-model默认绑定的数据类型是String
+          number修饰符可以让在输入框中输入的内容自动转成数字类型
+      -->
+      <input type="number" v-model.number="age" >
+      <h2>{{age}}-{{typeof age}}</h2>
+      <!-- 2.trim修饰符
+          trim修饰符可以让在输入框中输入的内容去掉左右的两边空格
+      -->      
+      <input type="text" v-model.trim="name">  
+      <h2>{{name}}</h2>
+  </div>
+  ```
+
+  
+
+
+
+### 组件化开发
+
+#### 注册组件的基本步骤
+
+1. 创建组件构造器 --> Vue.extend()
+2. 注册组件  --> Vue.component()
+3. 使用组件
+
+#### 基本使用
+
+```js
+// 全局注册
+Vue.component('cpn', {
+    template: `<div>组件</div>`,
+    data() {
+        return {
+            name: `Senku`
+        }
+    }
+})
+// 局部注册
+new Vue({
+    //...
+    components: {
+        template: `<div>组件</div>`,
+        // 组件的数据必须是一个函数,保持使用组件时的数据独立
+        data() {
+            return {
+                name: `Senku`
+            }
+        },
+        // 继续嵌套子组件
+        components: {/**...*/}
+    }
+})
+```
+
+#### 模板分离
+
+```html
+<template id="cpn">
+	<div>
+        <h2>
+            I'm Title
+        </h2>
+    </div>
+</template>
+
+<script>
+	Vue.component('cpn', {
+        template: '#cpn',
+        
+    })
+</script>
+```
+
+#### 组件通信
+
+```html
+<!--  movies可以是一个字符串或者是父组件中绑定的值 -->
+<cpn :cMovies="movies" :cmes="message"></cpn>
+<script>
+	Vue.component('cpn', {
+        template: '#cpn',
+        // 数组传入
+        // props:['c-Movies']
+        // 对象传入
+        props: {
+            cMovies: {
+                // 类型限制
+                type: Array,
+                // 提供默认值
+                default() { return [] }
+            }
+        }
+    })
+</script>
+```
+
+#### 组件通信-自定义事件
+
+```html
+<!-- 监听事件,不写参数默认传递子组件参数 -->
+<cpn @btn-click="cpnClick"></cpn>
+
+<template id="cpn">
+    <div>
+        <button @click="btnClick(item)" v-for="item in categories">{{item.name}}</button>
+    </div>
+</template>
+
+<script>
+    const cpn = {
+        //...
+        methods: {
+            btnClick(item) {
+                // 发射事件:自定义事件传递
+                this.$emit('btn-click',item)
+            }
+        }
+    }
+
+    new Vue({
+        //...
+        components: {
+            cpn,
+        },
+        methods: {
+            // 接收事件
+            cpnClick(item) {
+                console.log('cpnClick',item)
+            }
+        }
+    })
+</script>
+```
+
+#### 组件访问
+
+- 访问子组件实例或元素
+
+  ```html
+  <cpn ref="cpn"></cpn>
+  <scirpt>
+      // 1.$children
+      console.log(this.$children);
+      this.$children[0].showMessage();
+      // 2.$.refs 常用获取组件方式
+      console.log(this.$refs.cpn.name);
+  </scirpt>
+  ```
+
+- 访问父组件或根组件
+  - this.$parent
+  - this.$root
+
+### 插槽
+
+- 基本使用
+
+  ```html
+  <div id="app">
+      <cpn></cpn>
+      <!-- <cpn><button>按钮</button></cpn> -->
+      <cpn><span>span</span></cpn>
+      <cpn><i>i</i></cpn>
+      <!-- 当有多个元素时 将会一起替换slot -->
+      <cpn>
+          <div>div</div>
+          <span>span</span>
+      </cpn>
+  </div>
+  
+  <template id="cpn">
+      <div>
+          <h2>我是组件</h2>
+          <!-- 默认值插入 -->
+          <slot><button>按钮</button></slot>
+      </div>
+  </template>
+  
+  ```
+
+- 具名插槽
+
+  ```html
+  <div id="app">
+      <cpn>
+          <!-- 告诉插槽需要替换哪一个 -->
+          <span slot="center">标题</span>
+      </cpn>
+  </div>
+  
+  <template id="cpn">
+      <div>
+          <!-- 给插槽命名 -->
+          <slot name="left"><span>左边</span></slot>
+          <slot name="center"><span>中间</span></slot>
+          <slot name="right"><span>右边</span></slot>
+      </div>
+  </template>
+  ```
+
+- 插槽的作用域
+
+  ```html
+  <div id="app">
+      <cpn></cpn>
+      <!-- 父组替换插槽的标签，但是内容由子组件来提供 -->
+      <cpn>
+          <!-- 获取子组件的pLanguages -->
+          <template slot-scope="slot">
+              <!-- <span v-for="item in slot.data">  {{item}}-  </span> -->
+              <span>{{ slot.data.join(' - ') }}</span>
+          </template>
+      </cpn>
+  </div>
+  
+  <template id="cpn">
+      <div>
+          <!-- 绑定data -->
+          <slot :data="pLanguages">
+              <ul>
+                  <li v-for="item in pLanguages">{{item}}</li>
+              </ul>
+          </slot>
+      </div>
+  </template>
+  ```
+
+  
+
+
+
+### Webpack
+
+- gunt/gulp的核心是task
+- 什么时候用gunt/gulp
+  - 工程模块依赖非常简单，甚至没有用到模块化的概念
+  - 只需要简单的合并、压缩，就使用gunt/gulp即可
+  - 但是如果整个项目使用了模块化管理，而且相互依赖非常强，我们就可以使用更加强大的webpack
+- gunt/gulp和webpack有什么不同？
+  - gunt/gulp更加强调的是前端流程的自动化，模块化不是他它的核心
+  - webpack更加强调模块化开发管理，而文件压缩合并、与处理等功能，是他附带的功能。
+
+- loader和plugin区别
+  - loader主要用于转换某些类型的模块,它是一个转换器
+  - plugin是插件,它是对webpack本身的扩展,是一个扩展器
+
+### Vue CLI
+
+> 使用Vue.js开发大型应用时,我们需要考虑代码目录结构,项目结构部署,热加载,代码单元测试等.
+
+> 如果手动完成这个工作,效率比较低效,
+>
+> 使用vue-cli可以快速搭建Vue开发环境以及对应的webpack配置
+
+#### Vue CLI的使用
+
+```bash
+#安装
+npm install -g @vue/cli
+#拉取2.x版本模板(旧版本)
+npm install -g @vue/cli-init
+#Vue CLI2 初始化项目
+vue init webpack my-project
+#Vue CLI3 初始化项目
+vue create my-project
+```
+
+
+
