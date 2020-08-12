@@ -650,3 +650,32 @@ vue create my-project
 
 
 
+### runtime-compiler和runtime-only
+
+- Compiler
+
+  > template (parse) -> AST (compiler) -> render -> virtual DOM -> UI
+
+- Only
+
+  > render -> virtual DOM -> UI
+
+- render函数
+
+  ```js
+  new Vue({
+    el: '#app',
+    // components: { App },
+    // template: '<App/>'
+    render: function (createElement) {
+      // 1.createElement('标签', {标签的属性}, [标签的内容])
+      // return createElement('h2', {class: 'box'}, ['Hello,World'])
+      // 2.传入组件对象
+      return createElement(App)
+    }
+  })
+  ```
+
+  .vue文件中的template是由谁处理的?
+
+  vue-template-compiler
