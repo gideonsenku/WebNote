@@ -63,6 +63,37 @@
 - `.bind(this)` 创建了一个该函数的“绑定版本”。
 - 箭头函数 `=>` 没有创建任何绑定。箭头函数只是没有 `this`。`this` 的查找与常规变量的搜索方式完全相同：在外部词法环境中查找。
 
+```js
+const obj = {
+  test() {
+    setTimeout(function () {
+
+      setTimeout(function () {
+        console.log(this) // window
+      })
+
+      setTimeout(() => {
+        console.log(this) // window
+      })
+    })
+
+    setTimeout(() => {
+      setTimeout(function () {
+        console.log(this) // window
+      })
+
+      setTimeout(() => {
+        console.log(this === obj) // obj
+      })
+    })
+  }
+}
+
+obj.test()
+```
+
+
+
 ```javascript
 //ajax
 var xhttp = new XMLHttpRequest();
