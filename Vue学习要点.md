@@ -8,7 +8,7 @@
 
 高级功能
 
-- 解耦试图和数据
+- 解耦视图和数据
 - 可复用的组件
 - 前端路由技术（router）
 - 状态管理（Vuex）
@@ -28,11 +28,11 @@
 
 - vue生命周期函数不能使用箭头函数
 - beforeCreate
-- created（常常用作请求数据）
-- beforeMount
-- mounted
+- created（常常用作请求数据）（*组件被创建后回调*）
+- beforeMount 
+- mounted （*当template挂载到DOM时回调*）
 - beforeUpdate
-- updated
+- updated （*当界面刷新的时回调*）
 - beforeDestory
 - destroyed
 
@@ -679,3 +679,351 @@ vue create my-project
   .vue文件中的template是由谁处理的?
 
   vue-template-compiler
+  
+  
+
+#### 修改webpack配置
+
+- 通过`vue ui`命令交互式配置
+- 通过创建`vue.webpack.js`编写配置
+- `resolve`解析，其中的`extensions：['.js','.css','.vue']`可以在`import`时不写文件的后缀名
+
+
+
+### Vue-router
+
+1. 后端渲染
+   - 在后端已经动态渲染好的页面返回给浏览器
+2. 前端渲染
+   - 即前后端分离，后端只提供API数据，前端将数据渲染到页面中
+3. SPA页面(单页面富应用)
+   - 在前后端分离的基础上加了一层前端路由
+4. 前端路由的核心
+   - 改变URL，但是页面不进行整体的刷新
+   - `location.hash = 'loc'`
+   - `history.pushState({},'','loc')`
+   - `history.go(number)` 
+5. index.js
+
+```js
+// 配置路由相关的信息
+import VueRouter from 'vue-router'
+import Vue from 'vue'
+import Home from '../components/Home.vue'
+import About from '../components/About.vue'
+
+// 1.通过Vue.use(插件) 安装插件
+Vue.use(VueRouter)
+
+// 2.创建VueRouter对象,必须为routes！！！
+const routes = [
+  // 默认路径重定向
+  // 一个对象是一个route
+  {
+    path: '/',
+    redirect: '/home'
+  },
+  {
+    path: '/home',
+    component: Home
+  },
+  {
+    path: '/about',
+    component: About
+  }
+]
+const router = new VueRouter({
+  routes,
+  // 将默认的hash模式更改为history
+  mode: 'history',
+  // 修改默认的router-link-active为active
+  linkActiveClass: 'active'
+})
+
+// 3.将router对象传入到Vue实例
+export default router
+```
+
+6. App.vue
+
+```vue
+<template>
+  <div id="app">
+    <router-view></router-view>
+    <!-- 
+      to属性用于指定的跳转路径
+      tag属性用于指定的标签
+      replace属性
+      active-class属性用于更改active-class类名
+    -->
+    <!-- <router-link to="/home" replace tag="button" active-class="active">首页</router-link>< -->
+    <!-- <router-link to="/about" replace tag="button">关于</router-link> -->
+
+    <button @click="homeClick">首页</button>
+    <button @click="aboutClick">关于</button>
+  </div>
+</template>
+
+<script>
+//import HelloWorld from './components/HelloWorld.vue'
+
+export default {
+  name: 'App',
+  methods: {
+    // 代码跳转
+    homeClick() {
+      this.$router.push('/home')
+      // this.$router.replace('/home')
+      console.log('click');
+    },
+    aboutClick() {
+      this.$router.push('/about')
+    }
+  }
+}
+
+</script>
+
+<style>
+.router-link-active{
+  color:red;
+}
+
+.active{
+  color:red;
+}
+</style>
+```
+
+7. 动态路由
+
+```js
+// index.js
+{
+  // :userid 绑定,在组件中使用this.$route.params.userid
+  path: '/user/:userid',
+  component: User
+}
+// app.vue
+<router-link :to="'/user/' + user">用户</router-link>
+
+  data() {
+    return {
+      user: 'lisi'
+    }
+  },
+  
+// user.vue
+  computed: {
+    userId() {
+      // 获取参数
+      return this.$route.params.userid
+    }
+  }
+```
+
+8. 路由的懒加载
+
+   - 主要的作用：将路由对应的组件打包成一个个的js代码块
+   - 只有在这个路由被访问到的时候才加载对应的组件
+   - 懒加载的方式：
+
+   ```js
+   const Home = () => import('../component/Home')
+   const About = () => import('../component/About')
+   
+   const routes = [
+     {
+       path: '/home',
+       component: Home
+     },
+     {
+       path: '/about',
+       component: About
+     }
+   ]
+   ```
+
+   - 嵌套路由
+
+   index.js
+
+   ```js
+   const HomeNews = () => import('../components/HomeNews.vue')
+   const HomeMessages = () => import('../components/HomeMessages.vue')
+   
+   const routes = [
+     //...
+     {
+       path: '/home',
+       component: Home,
+       // 使用children数组定义嵌套路由
+       children: [
+         // 设置嵌套路由的默认路径
+         {
+           path: '',
+           component: HomeNews
+         },
+         {
+           path: 'news',
+           component: HomeNews
+         },
+         {
+           path: 'messages',
+           component: HomeMessages
+         }
+       ]
+     }
+   ]
+   ```
+
+   Home.vue
+
+   ```vue
+   <template>
+     <div>
+       <h2>我是Home</h2>
+       <p>Home Content</p>
+       <router-link to="/home/news">新闻</router-link>
+       <router-link to="/home/messages">消息</router-link>
+       <router-view></router-view>
+     </div>
+   </template>
+   ```
+
+9. 参数传递的方式
+
+   - 通过`params`
+
+     ```vue
+     <!-- 在子组件取出对象 {userid:"lisi"}-->
+     <h2>{{ $route.params }}</h2>
+     
+     <script>
+         //父组件参数传递
+         export default {
+         	//...
+             methods: {
+                 userClick(){
+                     this.$router.push('/user/' + this.user)
+                 }
+             }
+         }
+     </script>
+     ```
+
+   - 通过`query`
+
+     ```vue
+     <!-- 在子组件取出 父组件传递的`query` 对象 -->
+     <h2>{{ $route.query }}</h2>
+     
+     <script>
+         //父组件参数传递
+         export default {
+         	//...
+             data(){
+               return {
+                   profile: {
+                       path: '/profile',
+                       query: {
+                           name: 'Senku',
+                           age: 22,
+                           height: '1.88'
+                       }
+                   }
+               }
+           }
+           methods: {
+               profileClick(){
+                   //传递query对象
+                   this.$router.push(this.profile)
+               }
+           }
+       }
+     </script>
+     ```
+
+   10. `$router`和`$route`的区别
+
+   - `$router`为VueRouter实例，想要导航到不同的URL，则使用`$router.push`方法
+   - `$route`为当前router跳转对象里面可以获取name、path、query、params等
+
+   11. 导航守卫
+
+       监听路由的跳转`router.beforeEach`方法
+
+       - `to`：即将要进入的目标的路由对象
+       - `from`：当前导航即将要离开的路由对象
+       - `next`：调用该方法后，才能进入下一个钩子
+
+       ```js
+       const routes = [
+         {
+           path: '/',
+           component: Home,
+           // 可以在route对象定义meta对象存储元数据
+           meta: {
+             title: '首页'
+           }
+         }
+       ]
+       // 全局前置钩子
+       router.beforeEach((to, from, next) => {
+         // to是一个route对象,
+         document.title = to.matched[0].meta.title
+         console.log(to);
+         // next是一个函数,必须调用
+         next()
+       })
+       
+       // 全局后置钩子 
+       router.afterEach((to, from) => {
+         console.log('------');
+       })
+       
+       ```
+
+   12. keep-alive遇见vue-router
+
+       记录组件的状态
+
+       `keep-alive`-->`actived||deactived`（以keep-alive为前提的hook）
+
+       `keep-alive`有以下两个属性
+
+       - `include`：字符串或正则表达式，只有匹配的组件会被缓存
+       - `exclude`：字符串或正则表达式，任何匹配的组件都不会被缓存
+
+       App.vue
+
+       ```vue
+       <keep-alive>
+       	<router-view/>
+       </keep-alive>
+       ```
+
+       Home.vue
+
+       ```vue
+       <script>
+         export default {
+           data() {
+             return {
+               // 记录状态并赋默认值
+               path: '/home/news'
+             }
+           },
+           activated() {
+             this.$router.push(this.path)
+           },
+           // 组件内的守卫
+           beforeRouteLeave (to, from, next) {
+             this.path = from.path
+             next()
+           }
+         }
+       </script>
+       ```
+
+   13. 
