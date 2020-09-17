@@ -826,6 +826,7 @@ export default {
 
    - 主要的作用：将路由对应的组件打包成一个个的js代码块
    - 只有在这个路由被访问到的时候才加载对应的组件
+   - 懒加载必须使用 `import`不能使用`require`
    - 懒加载的方式：
 
    ```js
@@ -1014,16 +1015,258 @@ export default {
                path: '/home/news'
              }
            },
+           // 以下两个方法只有该组件被保持了状态，即使用了keep-alive时才是有效的
            activated() {
+             this.$router.push(this.path)
+           },
+           deactivated() {
              this.$router.push(this.path)
            },
            // 组件内的守卫
            beforeRouteLeave (to, from, next) {
              this.path = from.path
              next()
-           }
+        }
          }
        </script>
        ```
+   
+   13. 修改页面路由重复点击报错
+   
+       ```js
+       const originalPush = VueRouter.prototype.push
+          VueRouter.prototype.push = function push(location) {
+          return originalPush.call(this, location).catch(err => err)
+       }
+       ```
 
-   13. 
+### Vuex
+
+Vuex是一个专为`Vue.js`应用程序开发的状态管理模式
+
+#### Vuex的使用
+
+1. 安装`vuex` ：`npm i vuex --save`
+
+2. 在Src下创建`store`文件夹，`index.js`文件
+
+   ```js
+   import Vuex from 'vuex'
+   import Vue from 'vue'
+   
+   // 1. 安装插件
+   Vue.use(Vuex)
+   
+   // 2. 创建对象
+   export default new Vuex.Store({
+     // 保存全局状态
+     state: {
+       couter: 1000
+     },
+     // 对状态进行操作
+     mutations: {
+       increment(state) {
+         state.couter++
+       },
+       decrement(state) {
+         state.couter--
+       }
+     },
+     // 常用于异步操作需进行actions，然后传入mutations转化为同步操作
+     actions: {
+   
+     },
+     getters: {
+   
+     },
+     modules: {
+   
+     }
+   })
+   ```
+
+3. Vuex核心概念
+
+   1. State：单一状态树
+
+   2. Getters：对数据进行操作后给其他组件时使用
+
+      ```js
+        getters: {
+          powCouter(state) {
+            return state.couter**2
+          },
+          // getters的参数传递
+          more20Stu(state) {
+            return state.students.filter(s => s.age > 20)
+          },
+          more20StuLength(state, getters) {
+            return getters.more20Stu.length
+          },
+          moreAgeStu(state) {
+            return age => state.students.filter(s => s.age > age)
+          }
+        },
+      ```
+
+   3. Mutation：
+
+      1. 更新数据时，希望携带一些额外的参数，参数被称为`payload`
+
+      ```js
+        mutations: {
+          increment(state) {
+            state.couter++
+          },
+          decrement(state) {
+            state.couter--
+          },
+          // 当组件调用$store.commit('increments',{
+          //         count,
+          //    })
+          increments(state, payload) {
+            state.couter += payload.count
+          },
+          incrementStu(state, stu) {
+            state.students.push(stu)
+          }
+        },
+      ```
+
+      2.  Mutation 必须是同步函数
+
+      3.  Mutation 需遵守 Vue 的响应规则
+
+         - 最好提前在你的 store 中初始化好所有所需属性。
+
+         - 当需要在对象上添加新属性时，你应该
+
+         - 使用 `Vue.set(obj, 'newProp', 123)`, 或者
+
+         - 以新对象替换老对象。例如，利用[对象展开运算符](https://github.com/tc39/proposal-object-rest-spread)我们可以这样写：
+
+           ```js
+           state.obj = { ...state.obj, newProp: 123 }
+           ```
+
+         - 在对象上删除属性时使用Vue.delete(obj, Key)
+
+           ```js
+            Vue.delete(state.info, 'age')
+           ```
+
+      4. Mutation 必须是同步函数，异步操作放在actions
+
+      5. 组件中使用 `mapMutations` 辅助函数将组件中的 methods 映射为 `store.commit` 调用（需要在根节点注入 `store`）
+
+         ```js
+         import { mapMutations } from 'vuex'
+         
+         export default {
+           // ...
+           methods: {
+             ...mapMutations([
+               'increment', // 将 `this.increment()` 映射为 `this.$store.commit('increment')`
+         
+               // `mapMutations` 也支持载荷：
+               'incrementBy' // 将 `this.incrementBy(amount)` 映射为 `this.$store.commit('incrementBy', amount)`
+             ]),
+             ...mapMutations({
+               add: 'increment' // 将 `this.add()` 映射为 `this.$store.commit('increment')`
+             })
+           }
+         }
+         ```
+
+         
+
+   4. Action
+
+      1. 所有异步操作放在此处处理
+
+         ```js
+         // store/index.js  
+         actions: {
+             [CHANGE](context,payload) {
+               return new Promise((resolve, reject) => {
+                 setTimeout(() => {
+                   context.commit('changInfo')
+                   console.log(payload);
+                   resolve('I have changed')
+                 }, 1000);
+               })
+             }
+           }
+         // App.vue
+             changeInfo() {
+               // 1. 同步操作直接`commit`
+               // this.$store.commit('changInfo')
+               // 2. 异步操作需要`dispatch`到`actions`
+               this.$store
+               .dispatch(CHANGE,"I'm payload message")
+               .then(res => console.log(res))
+             }
+         ```
+
+         
+
+   5. Module
+   
+      1. 可以拥有属于自己的`state`、`mutations`等
+      2. 但在组件中获取`state`的值时需要使用`$store.state.moduleName.name`
+      3. 在`getters`中具有`rootState`可以获取根的`state`
+   
+      ```js
+      export default {
+        state: {
+          name: 'zhangsan'
+        },
+        mutations: {
+          updateName(state, payload) {
+            state.name = payload
+          }
+        },
+        actions: {
+          asyncUpdateName(context, payload) {
+            return new Promise((resolve, reject) => {
+              setTimeout(() => {
+                context.commit('updateName', payload)
+                resolve('Name have changed')
+              }, 1000);
+            })
+          }
+        },
+        getters: {
+          fullName(state) {
+            return state.name + '1111'
+          },
+          fullName1(state, getters) {
+            return getters.fullName + '2222'
+          },
+          fullName2(state, getters, rootState) {
+            return getters.fullName + rootState.couter
+          },
+        }
+      }
+      ```
+   
+   6. Vuex的项目结构
+   
+      ```
+      ├── index.html
+      ├── main.js
+      ├── api
+      │   └── ... # 抽取出API请求
+      ├── components
+      │   ├── App.vue
+      │   └── ...
+      └── store
+          ├── index.js          # 我们组装模块并导出 store 的地方
+          ├── actions.js        # 根级别的 action
+          ├── mutations.js      # 根级别的 mutation
+          └── modules
+              ├── cart.js       # 购物车模块
+              └── products.js   # 产品模块
+      ```
+   
+   
