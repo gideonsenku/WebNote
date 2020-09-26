@@ -1270,3 +1270,62 @@ Vuex是一个专为`Vue.js`应用程序开发的状态管理模式
       ```
    
    
+
+### Axios
+
+#### 网络模块
+
+- 设置全局配置
+
+  ```js
+  axios.defaults.baseURL = '192.168.0.1:8080'
+  axios.defaults.timeout = 500
+  ```
+
+  
+
+- 使用axios.all，可以放入多个请求的数组,即发送并发请求
+
+  ```js
+  axios.all([
+      axios.get('http://123.207.32.32:8000/category'),
+      axios.get('http://123.207.32.32:8000/home/date', {
+        params: {
+          type: 'sell',
+          page: 1
+        }
+      })
+    ])
+    .then(res => {
+      // 使用axios.spread可将数组[res1,res2]展开
+      // 返回结果是一个数组,
+      console.log(res)
+    })
+  ```
+
+- 配置多个axios的实例，用于解决全局配置冲突问题
+
+  ```js
+  const instans1 = axios.create({
+    baseURL: '',
+    timeout: ''
+  })
+  ```
+
+- 拦截器
+
+  ```
+  // 请求拦截
+  instans1.interceptors.request.use(config => {
+    // 对请求数据处理
+    return config
+  })
+  // 返回拦截
+  instans1.interceptors.responce.use(result => {
+    // 对返回数据处理
+    return result
+  })
+  ```
+
+
+
