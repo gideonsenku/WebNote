@@ -59,3 +59,8 @@ git diff HEAD HEAD^^
 
 git commit --amend
 
+### 建立远程仓库的连接
+```bash
+git add remote origin [respository]
+git push -u origin master
+```
